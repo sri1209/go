@@ -1,0 +1,150 @@
+TASK – 1
+1. Set up the Ansible project:
+ Create a new directory for your Ansible project and ini<alize it with the necessary files. Run 
+the following commands in your terminal:
+ bash
+ $ mkdir ansible-webserver
+ $ cd ansible-webserver
+ $ ansible-galaxy init roles/webserver
+------------------------------------------------------------------
+2. Create the Ansible playbook:
+ Inside the `ansible-webserver` directory, create a file called `site.yml` and add the following 
+content:
+ yaml
+ ---
+ - name: Configure and deploy web server
+ hosts: your_server
+ become: yes
+ roles:
+ - webserver
+------------------------------------------------------------------
+3. Create the Ansible role:
+ Inside the `roles` directory, navigate to `webserver` and modify the `tasks/main.yml` file as 
+follows:
+ yaml
+ ---
+ - name: Install required packages
+ apt:
+ name: "{{ item }}"
+ state: present
+ loop:
+ - apache2
+ - libapache2-mod-proxy-html
+ - libxml2-dev
+ - openssl
+ - name: Enable required Apache modules
+ apache2_module:
+ name: "{{ item }}"
+ state: present
+ loop:
+ - proxy
+ - proxy_hSp
+ - proxy_html
+ - ssl
+ - rewrite
+ - name: Create self-signed SSL cer<ficate
+ openssl_cer<ficate:
+ path: /etc/ssl/certs/selfsigned.crt
+ privatekey_path: /etc/ssl/private/selfsigned.key
+ common_name: your_domain
+ - name: Configure Apache virtual host
+ template:
+ src: vhost.conf.j2
+ dest: /etc/apache2/sites-available/your_domain.conf
+ owner: root
+ group: root
+ mode: 0644
+ no<fy:
+ - restart Apache
+ - name: Disable default Apache virtual host
+ apache2_module:
+ name: default
+ state: disabled
+ - name: Enable configured Apache virtual host
+ apache2_module:
+ name: your_domain
+ state: enabled
+ - name: Copy web page content
+ copy:
+ content: |
+ <html>
+ <head>
+ <<tle>Hello World</<tle>
+ </head>
+ <body>
+ <h1>Hello World!</h1>
+ </body>
+ </html>
+ dest: /var/www/html/index.html
+ handlers:
+ - name: restart Apache
+ service:
+ name: apache2
+ state: restarted
+------------------------------------------------------------------
+4. Create the Apache virtual host template:
+ Inside the `roles/webserver` directory, create a file called `templates/vhost.conf.j2` and add 
+the following content:
+ ```apache
+ <VirtualHost *:80>
+ ServerName your_domain
+ Redirect permanent / hSps://your_domain/
+ </VirtualHost>
+ <IfModule mod_ssl.c>
+ <VirtualHost *:443>
+ ServerName your_domain
+ SSLEngine on
+ SSLCer<ficateFile /etc/ssl/certs/selfsigned.crt
+ SSLCer<ficateKeyFile /etc/ssl/private/selfsigned.key
+ ProxyPreserveHost On
+ ProxyRequests Off
+ ProxyPass /
+HACKERRANK
+package main
+import (
+"bufio"
+"fmt"
+"os"
+"regexp"
+"strings"
+)
+func isValidCreditCardNumber(cardNumber string) bool {
+// Regular expression paSern to validate credit card number
+paSern := `^(4|5|6)\d{3}(-?\d{4}){3}$`
+// Check if the card number matches the paSern
+match, _ := regexp.MatchString(paSern, cardNumber)
+if !match {
+return false
+}
+// Remove hyphens from the card number
+cardNumber = strings.ReplaceAll(cardNumber, "-", "")
+// Check for consecu<ve repeated digits
+for i := 0; i < len(cardNumber)-3; i++ {
+if cardNumber[i] == cardNumber[i+1] && cardNumber[i] == cardNumber[i+2] && 
+cardNumber[i] == cardNumber[i+3] {
+return false
+}
+}
+return true
+}
+func main() {
+// Read the number of credit card numbers
+var n int
+fmt.Scanln(&n)
+// Read each credit card number and validate
+scanner := bufio.NewScanner(os.Stdin)
+for i := 0; i < n; i++ {
+scanner.Scan()
+cardNumber := scanner.Text()
+if isValidCreditCardNumber(cardNumber) {
+fmt.Println("Valid")
+} else {
+fmt.Println("Invalid")
+}
+}
+}
+Explanation:
+When we enter the credit card nunmber as input, the isValidCreditCardNumber func<on will be start verifying the number wheather it is a valid card or not. Based on the that, it give an boolean expression (indica<ng) as a output.
+After that, we use regular expression paSern ^(4|5|6)\d{3}(-?\d{4}){3}$ for validating the credit card number. If the card number doesnot match with the regexp.MatchString func<on, then it returns as false specifying that the card number is invalid.
+However, if the card number matches with the paSern, then the hphens are removed between the card number by using the strings. Now again, the program startes verifying the card number by checking for duplicated consecutive charactes, if any gour numbers are same in a row, then the function throw the card number as invalid.
+After passing through the all the above the steps, if card number is valid, then it returns Valid. Otherwise, Invalid.
